@@ -1,0 +1,89 @@
+---
+title: "JP Morgan Chase Corporate Challenge - Intel in 2016"
+author: "Aaron Ferrucci"
+date: "September 11, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load, echo=FALSE, message=FALSE, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+
+source("jpmcc2016.R")
+data <- getData()
+data <- cleanData(data)
+intel <- subset(data, Company == "INTEL")
+```
+
+## Intro
+
+JP Morgan Chase sponsors a short footrace in San Francisco every September. This year Intel had about 60 runners amid a total of about 8000. Here's an exploration of the race data.
+
+#### Basic quantities
+
+Number of runners: ```r nrow(data)```
+
+Number of companies: ```r length(unique(data$Company))```
+
+The gender breakdown is a bit tilted toward male runners:
+
+``` {r, echo=FALSE}
+qplot(data$Gender, ylab = "", xlab = "Gender", main="Gender Histogram")
+```
+
+#### Participation by Company
+
+Some companies fielded a large number of runners, and then there's a long tail. Here's the histogram of runners by company (I omitted company names from the X axis because they'd be illegible).
+
+``` {r, echo=FALSE}
+company_table <- table(data$Company)
+company_levels <- names(company_table)[order(company_table)]
+company_levels <- names(company_table)[order(company_table, decreasing=TRUE)]
+data$Company.Sort <- factor(data$Company, levels=company_levels)
+ggplot(data, aes(Company.Sort)) + geom_bar() + ggtitle("Runners per Company histogram") + ylab("runners") + xlab("Company") +
+  theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) + scale_y_continuous(breaks = seq(0, 600, 100)) + expand_limits(y = 600)
+```
+
+#### Top 20
+
+Here are the 20 companies with the most runners. Salesforce is by far the biggest. Intel is #18!
+
+``` {r, echo=FALSE}
+data %>% filter(Company %in% company_levels[1:20]) %>% ggplot(aes(Company.Sort)) + geom_bar() + ggtitle("Top 20 Companies") + ylab("runners") + xlab("Company") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + scale_y_continuous(breaks = seq(0, 600, 100)) + expand_limits(y = 600)
+```
+
+#### Elapsed TIme
+
+Here's a look at runner elapsed time. The X axis is bib # - a bit arbitrary, but it spreads the data out. Also, it appears that bib numbers were assigned per company in blocks, so runners in the same company are in the same X region. First-corral runners were assigned lower bib numbers, and you can see the effect: low bib numbers do tend to have shorter elapsed time. Intel runners are marked in black.
+
+``` {r, echo=FALSE}
+time.breaks <- seq(0, 4800, 60 * 10)
+ggplot(data, aes(x=Bib, y=Time.Seconds, color=Gender)) +
+  geom_point() +
+  scale_x_continuous(breaks = seq(0, 11000, 1000)) +
+  geom_point(data=intel, aes(x=Bib, y=Time.Seconds), color="black") +
+  ggtitle("Elapsed Time vs. Bib #") +
+  scale_y_continuous(breaks = time.breaks, labels = secondsToTimestr(time.breaks), name="elapsed time (hh:mm:ss)") +
+  expand_limits(y=0)
+
+```
+
+
+Another way to view the runner elapsed time is by plotting rank vs. run time. This plot gives a sense of the distribution of runner times - a small group of faster runners, a somewhat flat middle section, and then a sharply rising right-hand end. Again, I colored Intel runners in black.
+
+``` {r, echo=FALSE}
+ggplot(data, aes(x=Plc, y=Time.Seconds, color=Gender)) + 
+  geom_point() + 
+  xlab("rank") + 
+  geom_point(data=intel, aes(x=Plc, y=Time.Seconds), color="black") + 
+  ggtitle("Elapsed Time vs. Rank") +
+  scale_y_continuous(breaks = time.breaks, labels = secondsToTimestr(time.breaks), name="elapsed time (hh:mm:ss)") +
+  expand_limits(y=0)
+
+```
+
