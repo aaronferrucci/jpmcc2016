@@ -20,6 +20,22 @@ getUrl <- function(bib) {
   return(url)
 }
 
+secondsToTimestr <- function(seconds) {
+  hours <- as.integer(seconds / 3600)
+  seconds <- seconds - hours * 3600
+  minutes <- as.integer(seconds / 60)
+  seconds <- round(seconds - minutes * 60, digits=2)
+
+  minute_prefix <- ifelse(minutes < 10, "0", "")
+  minutes <- paste0(minute_prefix, minutes)
+  second_prefix <- ifelse(seconds < 10, "0", "")
+  seconds <- paste0(second_prefix, seconds)
+
+  time <- paste(hours, minutes, seconds, sep=":")
+  return(time)
+}
+
+
 # input: 29:56, 1:07:48, etc
 # output: time in seconds
 timeToSeconds <- function(time) {
@@ -69,6 +85,17 @@ getData <- function() {
   # time in seconds
   allData$Time.Seconds <- sapply(allData$Time, timeToSeconds)
 
+  return(allData)
+}
+
+cleanData <- function(allData) {
+  # One row has NAs - summarily drop it.
+  has.na <- apply(allData, 1, function(x) any(is.na(x)))
+  allData <- allData[!has.na,]
+
+  # One record appears to have an incorrect Plc. Manually fix it.
+  # This causes a duplicate "place" data point, which might be a problem.
+  allData[allData$Plc == 4135,]$Plc <- 2442
 
   return(allData)
 }
