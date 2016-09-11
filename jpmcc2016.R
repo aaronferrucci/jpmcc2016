@@ -37,9 +37,9 @@ getData <- function() {
     print(paste0("Using cached data from ", file))
     allData <- read.csv(file, stringsAsFactors=FALSE)
   } else {
+    print("Loading data from the jpmcc site. This will take a while.")
     allData <- data.frame()
-    # for (i in 1:12000) {
-    for (i in 101:105) {
+    for (i in 1:12000) {
       url <- getUrl(i)
       resp <- POST(url)
       cont <- content(resp, type="application/x-www-form-urlencoded")
@@ -62,9 +62,9 @@ getData <- function() {
   }
 
   # Cast some fields to numeric
-  allData$Plc <- as.numeric(allData$Plc)
-  allData$GPlc <- as.numeric(allData$GPlc)
-  allData$Bib <- as.numeric(allData$Bib)
+  allData$Plc <- as.integer(allData$Plc)
+  allData$GPlc <- as.integer(allData$GPlc)
+  allData$Bib <- as.integer(allData$Bib)
 
   # time in seconds
   allData$Time.Seconds <- sapply(allData$Time, timeToSeconds)
