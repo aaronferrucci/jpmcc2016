@@ -43,6 +43,10 @@ ui <- shinyUI(fluidPage(
         fluidRow(
           br(),
           tableOutput("summary_table")
+        ),
+        fluidRow(
+          br(),
+          tableOutput("references")
         )
       )
    )
@@ -86,6 +90,26 @@ server <- shinyServer(function(input, output) {
        max = c(sum1["Max."], sum2["Max."], sum3["Max."])
      )
    })
+   output$references <- renderTable({
+     labels <- c(
+       "JP Morgan Chase Site",
+       "Data Exploration",
+       "Source Code"
+     )
+     urls <- c(
+       "https://www.jpmorganchasecc.com/",
+       "http://rpubs.com/aaronferrucci/208500",
+       "https://github.com/aaronferrucci/jpmcc2016"
+     )
+     references <- paste0(
+       labels, ": ",
+       "<a href='",  urls, "' target='_blank'>",
+       urls, "</a>")
+
+     data.frame(references)
+
+   }, sanitize.text.function = function(x) x)
+
 })
 
 # Run the application 
