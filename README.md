@@ -7,3 +7,8 @@ An exploration of race data from the JP Morgan Chase Corporate Challenge,
 Full writeup is published here:
 
 http://rpubs.com/aaronferrucci/208500
+
+Interactive app:
+
+https://aaronferrucci.shinyapps.io/jpmcc2016_shiny/
+
