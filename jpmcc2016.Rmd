@@ -124,7 +124,8 @@ ggplot(data, aes(x=Plc, y=Time.Seconds, color=Gender)) +
 ```
 
 #### References
-  1. Source code: https://github.com/aaronferrucci/jpmcc2016
   1. JP Morgan Chase Corporate Challenge website: https://www.jpmorganchasecc.com
+  1. Interactive visualization: https://aaronferrucci.shinyapps.io/jpmcc2016_shiny/
+  1. Source code: https://github.com/aaronferrucci/jpmcc2016
 
 
