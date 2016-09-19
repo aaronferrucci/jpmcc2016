@@ -24,38 +24,30 @@ company_names <- unique(top20$Company)
 
 time.breaks <- seq(0, 4800, 60 * 10)
 
-
-# Define UI for application that draws a histogram
 ui <- shinyUI(fluidPage(
    
    # Application title
-   titlePanel("JP Morgan Chase Corporate Challenge - SF 2016 - Company Comparison, Top 20"),
+   titlePanel("JP Morgan Chase Corporate Challenge - Company Comparison"),
    
-   # Sidebar with a slider input for number of bins 
    sidebarLayout(
      sidebarPanel(
        selectInput('co1', 'Company #1', company_names, "SALESFORCE"),
        selectInput('co2', 'Company #2', company_names, "J.P. MORGAN CHASE"),
-       selectInput('co3', 'Company #3', company_names, "GENENTECH, INC."),
-       checkboxInput('smooth', 'Enable Smoother', FALSE),
-       checkboxInput('jitter', 'Enable Jitter', FALSE)
+       selectInput('co3', 'Company #3', company_names, "INTEL")
      ),
      
-      # Show a plot of the generated distribution
       mainPanel(
-         tabsetPanel(
-           tabPanel("Plot",
-             br(),
-             column(12, plotOutput("plot")),
-             br(),
-             tableOutput("summary_table")        
-           )
-         )
+        fluidRow(
+          column(12, plotOutput("plot"))
+        ),
+        fluidRow(
+          br(),
+          tableOutput("summary_table")
+        )
       )
    )
 ))
 
-# Define server logic required to draw a histogram
 server <- shinyServer(function(input, output) {
   
    output$plot <- renderPlot({
@@ -63,7 +55,7 @@ server <- shinyServer(function(input, output) {
      sel$Company.Sort <- factor(sel$Company, levels=c(input$co1, input$co2, input$co3))
      p <- ggplot(sel, aes(Company.Sort, Time.Seconds)) +
        geom_jitter(width=0.5, aes(color=Gender)) +
-       xlab("Company") +
+       theme(axis.title.x=element_blank()) +
        scale_y_continuous(breaks = time.breaks, labels = secondsToTimestr(time.breaks), name="elapsed time (hh:mm:ss)") +
        expand_limits(y=0)
      print(p)
@@ -75,9 +67,19 @@ server <- shinyServer(function(input, output) {
      sum2 <- summary(co2$Time.Seconds)
      co3 <- top20 %>% filter(Company %in% input$co3)
      sum3 <- summary(co3$Time.Seconds)
-
+     
+     sum_names <- names(sum1)
+     
+     sum1 <- secondsToTimestr(sum1)
+     names(sum1) <- sum_names
+     sum2 <- secondsToTimestr(sum2)
+     names(sum2) <- sum_names
+     sum3 <- secondsToTimestr(sum3)
+     names(sum3) <- sum_names
+     
      data.frame(
        company = c(input$co1, input$co2, input$co3),
+       runners = c(nrow(co1), nrow(co2), nrow(co3)),
        min = c(sum1["Min."], sum2["Min."], sum3["Min."]),
        mean = c(sum1["Mean"], sum2["Mean"], sum3["Mean"]),
        median = c(sum1["Median"], sum2["Median"], sum3["Median"]),
@@ -88,4 +90,3 @@ server <- shinyServer(function(input, output) {
 
 # Run the application 
 shinyApp(ui = ui, server = server)
-
